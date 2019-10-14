@@ -34,9 +34,15 @@ export class AppComponent {
   catches: Observable<Catch[]>;
   chasersDoc: AngularFirestoreDocument<Chaser>;
   chasers: Observable<Chaser>;
+  chasersListCol: AngularFirestoreCollection<Catch>;
+  chasersList: Observable<Catch[]>;
   chaserID: string;
   chaserName: string;
   currentLocation: string;
+
+  chooseChaserVisible = false;
+  enterPasswordVisible = false
+  loginTempUsername = "";
   
   catchesVisible = false;
   scannerVisible = false;
@@ -55,21 +61,35 @@ export class AppComponent {
     this.afAuth.authState.subscribe(user => {
       if (user) {
         this.setTeam(user.email);
+        this.chooseChaserVisible = false;
+        this.enterPasswordVisible = false;
 
       } else {
-        alert("Not logged in");
+        this.chooseChaserVisible = true;
       }
     })
+    this.chasersListCol = this.afs.collection('chasers');
+    this.chasersList = this.chasersListCol.valueChanges();
   }
-  
 
-  login(username: string, password: string) {
-    return this.afAuth.auth.signInWithEmailAndPassword(username, password)
+  setTempUserName(username: string){
+    this.loginTempUsername = username;
+    this.chooseChaserVisible = false;
+    this.enterPasswordVisible = true;
+  }
+
+  login(password: string) {
+    console.log(this.loginTempUsername+password);
+    return this.afAuth.auth.signInWithEmailAndPassword(this.loginTempUsername, password)
       .then((user) => {
+        
         console.log(user.user.email)
         
       })
-      .catch(error => console.log(error));
+      .catch(error => 
+        {
+          console.log(error)
+        });
   }
 
   logout() {

@@ -1,16 +1,35 @@
 <div id="app">
-    <ng-template #showLogin id="login">
+    
+    <div *ngIf="chooseChaserVisible">
         <div class="header">
             <div class="logo">
                 <img src="assets/logo.png">
             </div>
         </div>
-          <button (click)="login()">george</button>
-    </ng-template>
+        <h1>Choose your catching team</h1>
+        <div *ngFor="let chaser of chasersList | async">
 
-    <div *ngIf="afAuth.user | async as user; else showLogin" id="content">
+                <button>{{chaser.teamName}}</button>
+                </div>
+                <br>
+        <button (click)="setTempUserName('john@smith.co.uk')">John</button>
+        <button (click)="setTempUserName('george@pears.me.uk')">George</button>
+        <button (click)="setTempUserName('ameliapears24@gmail.com')">Amelia</button>
+    </div>
+
+    <div *ngIf="enterPasswordVisible">
+            <div class="header">
+                <div class="logo">
+                    <img src="assets/logo.png">
+                </div>
+            </div>
+            <p>Logging in as {{loginTempUsername}}</p>
+            <input (keyup.enter)="login(password.value)" type="text" #password>
+            <button (click)="login(password.value)">Go</button>
+        </div>
+
+    <div *ngIf="afAuth.user | async as user" id="content">
         
-
         <div id="catches" *ngIf="catchesVisible">
             <div id="catches-content">
                 <div class="header">
