@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "site": "twilightapp",
+    "public": "dist/twilightPWA",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
