@@ -23,6 +23,7 @@ interface Catch {
 }
 
 interface Chaser {
+  id: string;
   teamName: string;
   email: string;
 }
@@ -43,6 +44,7 @@ export class AppComponent {
   chasersListCol: AngularFirestoreCollection<Chaser>;
   chasersList: Observable<Chaser[]>;
   chaserID: string;
+  chaserName: string;
   currentLocation: string;
 
   catchWatchCol: AngularFirestoreCollection<any>;
@@ -77,7 +79,7 @@ export class AppComponent {
 
   uploadProgress: Observable<number>;
 
-  isConnected;
+  isConnected = true;
   onlineStatus = 'ONLINE';
 
   catchesPending = false;

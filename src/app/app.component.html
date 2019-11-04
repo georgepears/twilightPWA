@@ -19,12 +19,12 @@
             </div>
             <div *ngIf="!isConnected" class="offline">
                 <div class="dot-offline"></div>
-                <span>Offline</span><span *ngIf="catchesPending"> Go back online to upload your catches!</span>
+                <span>Offline - any catches will be uploaded once you're back online</span><span *ngIf="catchesPending"> Go back online to upload your catches!</span>
                 <div class="clear"></div>
             </div>
-            
+
         </div>
-    
+
     <div *ngIf="chooseChaserVisible">
         <div class="header">
             <div class="logo">
@@ -55,7 +55,7 @@
         </div>
 
     <div *ngIf="afAuth.user | async as user" id="content">
-        
+
         <div id="catches" *ngIf="catchesVisible">
             <div id="catches-content">
                 <div class="header">
@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                
+
 
                 <div id="catcherInfo">
                     <h2>Welcome, {{ (chasers | async)?.teamName }}</h2>
