@@ -6,13 +6,16 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
+import { UploadFormComponent } from './uploads/upload-form/upload-form.component';
 
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    UploadFormComponent
   ],
   imports: [
     BrowserModule,
@@ -21,6 +24,7 @@ import { environment } from '../environments/environment';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    AngularFireStorageModule,
     AngularFirestoreModule.enablePersistence(),
   ],
   providers: [],

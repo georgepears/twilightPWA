@@ -1,4 +1,29 @@
 <div id="app">
+
+    <div *ngIf="loginWaitVisible">
+        <div class="header">
+            <div class="logo">
+                <img src="assets/logo.png">
+            </div>
+        </div>
+        <div class="centre-container">
+            <h2>Logging you in...</h2>
+        </div>
+    </div>
+
+    <div class="online-status">
+            <div *ngIf="isConnected" class="online">
+                <div class="dot-online"></div>
+                <span>Online</span>
+                <div class="clear"></div>
+            </div>
+            <div *ngIf="!isConnected" class="offline">
+                <div class="dot-offline"></div>
+                <span>Offline</span><span *ngIf="catchesPending"> Go back online to upload your catches!</span>
+                <div class="clear"></div>
+            </div>
+            
+        </div>
     
     <div *ngIf="chooseChaserVisible">
         <div class="header">
@@ -7,14 +32,10 @@
             </div>
         </div>
         <h1>Choose your catching team</h1>
-        <div *ngFor="let chaser of chasersList | async">
-
-                <button>{{chaser.teamName}}</button>
-                </div>
-                <br>
-        <button (click)="setTempUserName('john@smith.co.uk')">John</button>
-        <button (click)="setTempUserName('george@pears.me.uk')">George</button>
-        <button (click)="setTempUserName('ameliapears24@gmail.com')">Amelia</button>
+        <br>
+        <div class="listOfUsers" *ngFor="let chaser of chasersList | async">
+            <button class="chooseUser" (click)="setTempUsername(chaser.id)">{{chaser.teamName}}</button>
+        </div>
     </div>
 
     <div *ngIf="enterPasswordVisible">
@@ -22,10 +43,15 @@
                 <div class="logo">
                     <img src="assets/logo.png">
                 </div>
+                <div class="back-btn">
+                        <img (click)="backChooseUser()" src="assets/back.png">
+                    </div>
             </div>
-            <p>Logging in as {{loginTempUsername}}</p>
-            <input (keyup.enter)="login(password.value)" type="text" #password>
-            <button (click)="login(password.value)">Go</button>
+            <div class="enterPassword">
+                <p>Logging in as <b>{{loginTempUsername}}</b></p>
+                <input placeholder="Enter password..." (keyup.enter)="login(password.value)" type="password" #password>
+                <button (click)="login(password.value)">Go</button>
+            </div>
         </div>
 
     <div *ngIf="afAuth.user | async as user" id="content">
@@ -41,13 +67,16 @@
                     </div>
                 </div>
 
+                
+
                 <div id="catcherInfo">
                     <h2>Welcome, {{ (chasers | async)?.teamName }}</h2>
-                    <p>{{ chaserID  }}</p>
+                    <p>{{ chaserID  }} - {{onlineStatus}}</p>
                     <img src="assets/sunset.png">
                 </div>
                 <h3>Your catches:</h3>
                 <div id="#catchList">
+                    <p *ngIf="!isConnected">You're offline - go back online to get the latest view of your catches.</p>
                     <div class="catch" *ngFor="let catch of catches | async">
                         <div class="catchTime">
                             {{catch.time}}
@@ -106,11 +135,87 @@
                 </div>
             </div>
 
-
-
-            
-
-                  
+            <div (click)="showAddManually()" class="add-manually-btn">
+                <img src="assets/add.png"> <p>Add catch manually</p>
+                <div class="clear"></div>
+            </div>
         </div>
+
+        <div *ngIf="addManuallyVisible">
+            <div class="header">
+                <div class="logo">
+                    <img src="assets/logo.png">
+                </div>
+                <div class="help-btn">
+                    <img src="assets/help.png">
+                </div>
+                <div class="back-btn">
+                    <img (click)="backToScanner()" src="assets/back.png">
+                </div>
+            </div>
+            <div class="centre-container">
+            <h1>Add a catch manually</h1>
+                <p>Enter the running team's ID from their card:</p>
+                <input #inputRunner (keyup.enter)="showAddPhoto(inputRunner.value)" class="manual-add-input" type="number" min="100" max="200"/>
+                <p>You will need to take a photo of the team's card to verify the catch.</p>
+                <button class="btn-red" (click)="showAddPhoto(inputRunner.value)">Next</button>
+            </div>
+        </div>
+
+        <div *ngIf="takePhotoVisible">
+            <div class="header">
+                <div class="logo">
+                    <img src="assets/logo.png">
+                </div>
+                <div class="help-btn">
+                    <img src="assets/help.png">
+                </div>
+                <div class="back-btn">
+                    <img (click)="backToScanner()" src="assets/back.png">
+                </div>
+            </div>
+            <div class="centre-container">
+                <h1>Add a catch manually</h1>
+                <p>You're catching runner <strong>{{manualRunnerID}}</strong></p>
+                <p>You now need to take a photo of the runner's card to verify the catch. Click the button below to open your camera.</p>
+                <p>Your catch will be sent for approval once your photo has uploaded.</p>
+                <input #imageChooser style="display: none" type="file" accept="image/*" capture="camera" (change)="imageChosen(imageChooser.files)"/>
+                <button class="btn-red" (click)="imageChooser.click()">Take photo</button>
+                <img class="preview-image" *ngIf="imgURL" [src]="imgURL"/>
+            </div>
+        </div>
+
+        <div *ngIf="uploadingManualVisible">
+            <div class="header">
+                <div class="logo">
+                    <img src="assets/logo.png">
+                </div>
+            </div>
+            <div class="centre-container">
+                <h1>Your catch is being uploaded...</h1>
+                <p>Your catch and image are being uploaded, so stay on the app!</p>
+                <p>Progress: {{uploadProgress | async}}</p>
+                <button class="btn-red" (click)="backToCatches()">Okay!</button>
+            </div>
+        </div>
+
+        <div *ngIf="catchAddedVisible">
+            <div class="header">
+                <div class="logo">
+                    <img src="assets/logo.png">
+                </div>
+                <div class="help-btn">
+                    <img src="assets/help.png">
+                </div>
+            </div>
+            <div class="centre-container">
+                <h1>Your catch is being checked...</h1>
+                <p>Your catch has been uploaded to our servers and is being processed.</p>
+                <p>Your catch will display as 'pending' until it has been approved.</p>
+                <p>You're now all good to leave this page!</p>
+                <button class="btn-red" (click)="backToCatches()">Okay!</button>
+            </div>
+        </div>
+
     </div>
 </div>

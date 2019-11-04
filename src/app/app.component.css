@@ -22,6 +22,83 @@ h1, h2, h3 {
     display:block;
 }
 
+.online, .offline {
+    background-color: white;
+    padding: 5px 10px;
+    font-size: 10px;
+    position: relative;
+}
+
+.dot-online {
+    background-color: green;
+    border-radius: 10px;
+    height: 10px;
+    width: 10px;
+    margin: 2px 5px;
+    float:left;
+}
+
+.dot-offline {
+    background-color: grey;
+    border-radius: 10px;
+    height: 10px;
+    width: 10px;
+    margin: 2px 5px;
+    float:left;
+}
+
+.online span, .offline span {
+    float: left;
+    height: 14px;
+    line-height: 14px;
+}
+
+.listOfUsers {
+    margin: 0px 20px;
+}
+
+.enterPassword {
+    margin: 60px 20px;
+    text-align: center;
+}
+
+.enterPassword input {
+    border-radius: 10px;
+    background-color:white;
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    margin: 5px 0px;
+    color: #444B54;
+    font-weight: 700;
+    box-sizing: border-box;
+}
+
+.enterPassword button {
+    background: #F26F6A;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px 0px;
+    width: 50%;
+    color: white;
+    font-weight: 700;
+    border: none;
+}
+
+.chooseUser {
+    border-radius: 10px;
+    background-color:white;
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    margin: 5px 0px;
+    color: #444B54;
+    font-weight: 700;
+
+}
+
 .help-btn img {
     position: absolute;
     height: 38px;
@@ -103,19 +180,16 @@ h1, h2, h3 {
 }
 
 #catches-content {
-    height: calc(100vh - 50px);
-    z-index: 51;
+    z-index: 49;
     padding: 0px 20px;
     background-color: #F6F5FA;
     position: relative;
-    border-radius: 0px 0px 40px 40px;
-    overflow: scroll;
-    padding-bottom: 20px;
+    padding-bottom: 70px;
     box-sizing: border-box;
 }
 
 #catches-button {
-    height: 100px;
+    height: 50px;
     width: 100%;
     position: fixed;
     background-color: #F26F6A;
@@ -123,6 +197,7 @@ h1, h2, h3 {
     left: 0;
     bottom: 0;
     z-index: 50;
+    border-radius: 111px 111px 0px 0px;
 }
 
 #catches-button span {
@@ -178,6 +253,62 @@ h1, h2, h3 {
 
 .scanner-error blockquote {
     font-size: 16px;
+}
+
+.add-manually-btn {
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    position:relative;
+}
+
+.add-manually-btn img {
+    height: 20px;
+    float:left;
+    padding: 16px 8px;
+}
+
+.add-manually-btn p {
+    height: 20px;
+    float:left;
+}
+
+.centre-container {
+    text-align: centre;
+    padding: 0px 20px;
+}
+
+.btn-red {
+    padding: 10px 30px;
+    background: #F26F6A;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    display: block;
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+.manual-add-input {
+    font-size: 25px;
+    font-weight: 700;
+    border: 1px solid #F26F6A;
+    padding: 7px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.preview-image {
+    width: 70%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
 }
 
  zxing-scanner {
