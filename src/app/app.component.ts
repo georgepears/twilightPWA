@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, DocumentChangeAction } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
-import { auth } from 'firebase/app';
-import * as firebase from 'firebase/app';
 import {formatDate} from '@angular/common';
 import { Observable } from 'rxjs';
 import { ZXingScannerComponent } from '@zxing/ngx-scanner';
@@ -36,7 +34,7 @@ interface Chaser {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent { 
+export class AppComponent {
 
   catchesCol: AngularFirestoreCollection<Catch>;
   catches: Observable<Catch[]>;
@@ -45,7 +43,6 @@ export class AppComponent {
   chasersListCol: AngularFirestoreCollection<Chaser>;
   chasersList: Observable<Chaser[]>;
   chaserID: string;
-  chaserName: string;
   currentLocation: string;
 
   catchWatchCol: AngularFirestoreCollection<any>;
@@ -55,9 +52,9 @@ export class AppComponent {
 
   chooseChaserVisible = false;
   enterPasswordVisible = false;
-  loginTempUsername = "";
+  loginTempUsername = '';
   loginWaitVisible;
-  
+
   catchesVisible = false;
   scannerVisible = false;
   qrResultString: string;
@@ -81,29 +78,28 @@ export class AppComponent {
   uploadProgress: Observable<number>;
 
   isConnected;
-  onlineStatus = "ONLINE";
+  onlineStatus = 'ONLINE';
 
   catchesPending = false;
 
 
-  @ViewChild('scanner', {static: false}) 
+  @ViewChild('scanner', {static: false})
   scanner: ZXingScannerComponent;
 
 
   constructor(private afStorage: AngularFireStorage, private afs: AngularFirestore, public afAuth: AngularFireAuth, private connectionService: ConnectionService) {
-    
+
     this.connectionService.monitor().subscribe(isConnected => {
       this.isConnected = isConnected;
       if (this.isConnected) {
-        this.onlineStatus = "ONLINE";
-        setTimeout(() => this.updateFirestoreFromLocal(), 5000)
-        console.log("Back online, updating catches...")
+        this.onlineStatus = 'ONLINE';
+        setTimeout(() => this.updateFirestoreFromLocal(), 5000);
+        console.log('Back online, updating catches...');
+      } else {
+        this.onlineStatus = 'OFFLINE';
+        console.log('Offline!!');
       }
-      else {
-        this.onlineStatus = "OFFLINE";
-        console.log("Offline!!")
-      }
-    })
+    });
 
     this.chasersListCol = this.afs.collection('chasers');
     this.chasersList = this.chasersListCol.valueChanges();
@@ -115,39 +111,38 @@ export class AppComponent {
       );
 
     this.afs.collection('chasers').valueChanges().subscribe(data => {
-      console.log("UPDATING LOCAL FROM FIREBASE BECAUSE SNAPSHOT CHANGE!")
+      console.log('UPDATING LOCAL FROM FIREBASE BECAUSE SNAPSHOT CHANGE!');
       this.updateFirestoreFromLocal();
-    })
-    
+    });
 
-    console.log("Local storage says:"+localStorage.getItem('localChaserEmail'))
-    if (localStorage.getItem('localChaserEmail') == null){
-      console.log("Local is null...")
+
+    console.log('Local storage says:' + localStorage.getItem('localChaserEmail'));
+    if (localStorage.getItem('localChaserEmail') == null) {
+      console.log('Local is null...');
       this.afAuth.authState.subscribe(user => {
         if (user) {
           this.setTeam(user.email);
           this.chooseChaserVisible = false;
           this.enterPasswordVisible = false;
-          localStorage.setItem('localChaserEmail',user.email)
-          console.log("Logged in online");
+          localStorage.setItem('localChaserEmail', user.email);
+          console.log('Logged in online');
           this.updateFirestoreFromLocal();
 
         } else {
           this.chooseChaserVisible = true;
-          console.log("Not logged in");
+          console.log('Not logged in');
         }
-      })
-    }
-    else {
+      });
+    } else {
       this.setTeam(localStorage.getItem('localChaserEmail'));
       this.chooseChaserVisible = false;
       this.enterPasswordVisible = false;
-      console.log("Logged in offline");
+      console.log('Logged in offline');
       this.updateFirestoreFromLocal();
     }
   }
 
-  setTempUsername(username: string){
+  setTempUsername(username: string) {
     this.loginTempUsername = username;
     this.chooseChaserVisible = false;
     this.enterPasswordVisible = true;
@@ -161,13 +156,12 @@ export class AppComponent {
   login(password: string) {
     return this.afAuth.auth.signInWithEmailAndPassword(this.loginTempUsername, password)
       .then((user) => {
-        
-        console.log(user.user.email)
-        
+
+        console.log(user.user.email);
+
       })
-      .catch(error => 
-        {
-          console.log(error)
+      .catch(error => {
+          console.log(error);
         });
   }
 
@@ -182,14 +176,14 @@ export class AppComponent {
   }
 
 
-  setTeam(id:string) {
+  setTeam(id: string) {
     this.catchesVisible = false;
     this.chaserID = id;
 
     this.catchesCol = this.afs.collection('catches', ref => ref.orderBy('time', 'desc').where('chaserID', '==', this.chaserID));
     this.catches = this.catchesCol.valueChanges();
 
-    this.chasersDoc = this.afs.doc('chasers/'+this.chaserID);
+    this.chasersDoc = this.afs.doc('chasers/' + this.chaserID);
     this.chasers = this.chasersDoc.valueChanges();
 
     this.catchesVisible = true;
@@ -199,172 +193,169 @@ export class AppComponent {
     this.availableDevices = devices;
     this.hasDevices = Boolean(devices && devices.length);
   }
-  
+
 
   onHasPermission(has: boolean) {
     this.hasPermission = has;
   }
 
   onCodeResult(resultString: string) {
-    this.addCatch(resultString, "scan");
-    
+    this.addCatch(resultString, 'scan');
+
   }
 
-  addCatch(runnerID: string, catchMethod: string){
-    
-    this.qrResultString = runnerID;
-    var currentTime = formatDate(new Date(), 'HH:mm', 'en');
-    var currentLocation: string;
-    var catchID = currentTime+"-"+this.chaserID+"-"+runnerID;
+  addCatch(runnerID: string, catchMethod: string) {
 
-    var newCatchData = {'catchID': catchID, 'runnerID': runnerID, 'time': currentTime, 'chaserID': this.chaserID, 'status': 'pending', 'runnerName': 'Catch Pending...', 'method': catchMethod};
+    this.qrResultString = runnerID;
+    let currentTime = formatDate(new Date(), 'HH:mm', 'en');
+    let currentLocation: string;
+    let catchID = currentTime + '-' + this.chaserID + '-' + runnerID;
+
+    let newCatchData = {catchID: catchID, runnerID: runnerID, time: currentTime, chaserID: this.chaserID, status: 'pending', runnerName: 'Catch Pending...', method: catchMethod};
 
     console.log(newCatchData);
 
 
-    var tempLocalCatches = JSON.parse(localStorage.getItem("localCatches")); // Parse JSON
-    console.log("Offline catch JSON: "+JSON.stringify(tempLocalCatches));
-    if (tempLocalCatches != null){
-      if (localStorage.getItem("localCatches").includes(catchID)){
-        console.log("Catch is already here!");
-      }
-      else {
-        console.log("Local catches already initialized, pushing catch");
+    let tempLocalCatches = JSON.parse(localStorage.getItem('localCatches')); // Parse JSON
+    console.log('Offline catch JSON: ' + JSON.stringify(tempLocalCatches));
+    if (tempLocalCatches != null) {
+      if (localStorage.getItem('localCatches').includes(catchID)) {
+        console.log('Catch is already here!');
+      } else {
+        console.log('Local catches already initialized, pushing catch');
         tempLocalCatches.push(newCatchData);
-        localStorage.setItem("localCatches", JSON.stringify(tempLocalCatches));
-        console.log("New local storage is: "+localStorage.getItem("localCatches"));
-        
+        localStorage.setItem('localCatches', JSON.stringify(tempLocalCatches));
+        console.log('New local storage is: ' + localStorage.getItem('localCatches'));
+
       }
-    }
-    else {
-      console.log("First local catch, creating array and adding...");
-      var newCatchArray = [newCatchData];
-      localStorage.setItem("localCatches", JSON.stringify(newCatchArray));
-      console.log("New local storage is: "+localStorage.getItem("localCatches"));
-      
+    } else {
+      console.log('First local catch, creating array and adding...');
+      let newCatchArray = [newCatchData];
+      localStorage.setItem('localCatches', JSON.stringify(newCatchArray));
+      console.log('New local storage is: ' + localStorage.getItem('localCatches'));
+
 
     }
-    //this.afs.collection('catches').doc(catchID).set(newCatchData);
+    // this.afs.collection('catches').doc(catchID).set(newCatchData);
     this.updateFirestoreFromLocal();
     this.showCatchAdded();
 
     return catchID;
-    
+
   }
 
-  updateFirestoreFromLocal(){
+  updateFirestoreFromLocal() {
 
     this.loginWaitVisible = false;
-    
-    var localCatchArray = JSON.parse(localStorage.getItem("localCatches"));
 
-    console.log("Updating the current local catch db: "+JSON.stringify(localCatchArray));
+    let localCatchArray = JSON.parse(localStorage.getItem('localCatches'));
 
-    if (localCatchArray){
-      for (var i = 0; i < localCatchArray.length; i++){
-        console.log("Checking if "+localCatchArray[i].catchID+" is in firestore..., ")
+    console.log('Updating the current local catch db: ' + JSON.stringify(localCatchArray));
+
+    if (localCatchArray) {
+      for (let i = 0; i < localCatchArray.length; i++) {
+        console.log('Checking if ' + localCatchArray[i].catchID + ' is in firestore..., ');
         console.log(localCatchArray[i]);
         const tempCatchesCol = this.afs.collection('catches');
-        console.log("i is "+i);
-        
+        console.log('i is ' + i);
+
         tempCatchesCol.doc(localCatchArray[i].catchID).ref.get().then(function(doc) {
-          for (var j = 0; j < localCatchArray.length; j++){
-            if (doc.id == localCatchArray[j].catchID){
+          for (let j = 0; j < localCatchArray.length; j++) {
+            if (doc.id == localCatchArray[j].catchID) {
               if (doc.exists) {
-                  console.log(doc.id+" is in firestore, updating from firebase");
+                  console.log(doc.id + ' is in firestore, updating from firebase');
                   localCatchArray[j] = doc.data();
                   console.log(localCatchArray[j]);
-                  localStorage.setItem("localStorage", localCatchArray);
-                  
+                  localStorage.setItem('localStorage', localCatchArray);
+
               } else {
                   console.log(localCatchArray);
                   tempCatchesCol.doc(doc.id).set(localCatchArray[j]);
                   // TODO: Show catch added, then dissapear after 5 secs
               }
             }
-            console.log("Saving to local device");
-            localStorage.setItem("localCatches", JSON.stringify(localCatchArray));
+            console.log('Saving to local device');
+            localStorage.setItem('localCatches', JSON.stringify(localCatchArray));
           }
-          
+
         }).catch(function(error) {
-            console.log("Error getting document:", error);
+            console.log('Error getting document:', error);
         });
       }
-    }
-    else {
-      console.log("No catches in local storage, attempt to get from firebase...");
+    } else {
+      console.log('No catches in local storage, attempt to get from firebase...');
       this.afs.collection('catches', ref => ref.where('chaserID', '==', this.chaserID)).ref.get().then(function(querySnapshot) {
-        var tempLocalCatches = [];
+        let tempLocalCatches = [];
         querySnapshot.forEach(function(doc) {
             // doc.data() is never undefined for query doc snapshots
             console.log(tempLocalCatches);
 
-            console.log(doc.id, " => ", doc.data());
+            console.log(doc.id, ' => ', doc.data());
             tempLocalCatches.push(doc.data());
-            console.log("Saving to local device");
-            localStorage.setItem("localCatches", JSON.stringify(localCatchArray));
+            console.log('Saving to local device');
+            localStorage.setItem('localCatches', JSON.stringify(localCatchArray));
 
         });
-        
+
       })
       .catch(function(error) {
-          console.log("Error getting documents: ", error);
+          console.log('Error getting documents: ', error);
       });
 
     }
-    console.log("Saving to local device");
-    localStorage.setItem("localCatches", JSON.stringify(localCatchArray));
-    this.localCatches = JSON.parse(localStorage.getItem("localCatches"));
+    console.log('Saving to local device');
+    localStorage.setItem('localCatches', JSON.stringify(localCatchArray));
+    this.localCatches = JSON.parse(localStorage.getItem('localCatches'));
 
 
-    
+
   }
 
-  showScanner(){
-    this.catchesVisible = false
+  showScanner() {
+    this.catchesVisible = false;
     this.scannerVisible = true;
   }
 
-  resetCode(){
-    this.qrResultString = "";
+  resetCode() {
+    this.qrResultString = '';
   }
 
-  cancelCatch(){
+  cancelCatch() {
     this.scannerVisible = false;
     this.catchesVisible = true;
     this.scanner.enable = false;
   }
 
-  alertString(alerts: string){
+  alertString(alerts: string) {
     alert(alerts);
   }
 
-  showAddManually(){
-    this.scannerVisible = false
+  showAddManually() {
+    this.scannerVisible = false;
     this.addManuallyVisible = true;
     this.scanner.enable = false;
   }
 
-  backToScanner(){
+  backToScanner() {
     this.addManuallyVisible = false;
     this.takePhotoVisible = false;
     this.scannerVisible = true;
     this.imgURL = false;
   }
 
-  backToCatches(){
-    console.log("running");
+  backToCatches() {
+    console.log('running');
     this.catchAddedVisible = false;
     this.catchesVisible = true;
   }
 
-  showCatchAdded(){
+  showCatchAdded() {
     this.scannerVisible = false;
     this.addManuallyVisible = false;
     this.catchAddedVisible = true;
   }
 
-  showAddPhoto(runnerInput: string){
+  showAddPhoto(runnerInput: string) {
     this.addManuallyVisible = false;
     this.takePhotoVisible = true;
 
@@ -373,28 +364,28 @@ export class AppComponent {
 
   imageChosen(files) {
 
-    var reader = new FileReader();
+    let reader = new FileReader();
     this.imagePath = files;
-    reader.readAsDataURL(files[0]); 
-    reader.onload = (_event) => { 
+    reader.readAsDataURL(files[0]);
+    reader.onload = (_event) => {
       this.imgURL = reader.result;
-    } 
+    };
 
-    var runnerID = "trt"+this.manualRunnerID;
+    let runnerID = 'trt' + this.manualRunnerID;
 
-    var catchID = this.addCatch(runnerID, "manual");
+    let catchID = this.addCatch(runnerID, 'manual');
 
-    if(catchID){
-      console.log("Uploading image as "+catchID);
+    if (catchID) {
+      console.log('Uploading image as ' + catchID);
       this.ref = this.afStorage.ref(catchID);
-      this.task = this.ref.put(files[0]);    
+      this.task = this.ref.put(files[0]);
       this.uploadProgress = this.task.percentageChanges();
       this.takePhotoVisible = false;
     }
-    
-    //this.uploadingManualVisible = true;
 
-    
+    // this.uploadingManualVisible = true;
+
+
 
   }
 
