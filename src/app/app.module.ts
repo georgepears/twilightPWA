@@ -10,7 +10,6 @@ import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 import { UploadFormComponent } from './uploads/upload-form/upload-form.component';
-import { OnlineStatusModule } from 'ngx-online-status';
 
 
 @NgModule({
@@ -22,7 +21,6 @@ import { OnlineStatusModule } from 'ngx-online-status';
     BrowserModule,
     ZXingScannerModule,
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
-    OnlineStatusModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,

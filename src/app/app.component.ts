@@ -8,6 +8,7 @@ import { ZXingScannerComponent } from '@zxing/ngx-scanner';
 import { ViewChild } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { ConnectionService } from 'ng-connection-service';
+import { Network } from '@ngx-pwa/offline';
 
 interface Catch {
   catchID: string;
@@ -81,6 +82,8 @@ export class AppComponent {
 
   isConnected = true;
 
+  online$ = this.network.onlineChanges;
+
   catchesPending = false;
 
 
@@ -88,7 +91,7 @@ export class AppComponent {
   scanner: ZXingScannerComponent;
 
 
-  constructor(private afStorage: AngularFireStorage, private afs: AngularFirestore, public afAuth: AngularFireAuth, private connectionService: ConnectionService) {
+  constructor(protected network: Network, private afStorage: AngularFireStorage, private afs: AngularFirestore, public afAuth: AngularFireAuth, private connectionService: ConnectionService) {
 
     this.connectionService.monitor().subscribe(isConnected => {
       this.isConnected = isConnected;
@@ -141,6 +144,19 @@ export class AppComponent {
     }
   }
 
+  updateOnlineStatus(){
+    console.log("CHECKING ONLINE STATUS")
+    this.connectionService.monitor().subscribe(isConnected => {
+      this.isConnected = isConnected;
+      if (this.isConnected) {
+        console.log('Back online, updating catches...');
+        setTimeout(() => this.updateFirestoreFromLocal(), 5000);
+      } else {
+        console.log('Offline!!');
+      }
+    });
+  }
+
   setTempUsername(username: string) {
     this.loginTempUsername = username;
     this.chooseChaserVisible = false;
@@ -172,6 +188,7 @@ export class AppComponent {
   }
 
   ngOnInit() {
+    this.updateOnlineStatus();
   }
 
 
