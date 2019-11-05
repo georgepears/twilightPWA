@@ -80,7 +80,6 @@ export class AppComponent {
   uploadProgress: Observable<number>;
 
   isConnected = true;
-  onlineStatus = 'ONLINE';
 
   catchesPending = false;
 
@@ -94,11 +93,9 @@ export class AppComponent {
     this.connectionService.monitor().subscribe(isConnected => {
       this.isConnected = isConnected;
       if (this.isConnected) {
-        this.onlineStatus = 'ONLINE';
         setTimeout(() => this.updateFirestoreFromLocal(), 5000);
         console.log('Back online, updating catches...');
       } else {
-        this.onlineStatus = 'OFFLINE';
         console.log('Offline!!');
       }
     });
@@ -265,21 +262,20 @@ export class AppComponent {
           for (let j = 0; j < localCatchArray.length; j++) {
             if (doc.id == localCatchArray[j].catchID) {
               if (doc.exists) {
-                  console.log(doc.id + ' is in firestore, updating from firebase');
-                  localCatchArray[j] = doc.data();
-                  console.log(localCatchArray[j]);
-                  localStorage.setItem('localStorage', localCatchArray);
+                console.log(doc.id + ' is in firestore, updating from firebase');
+                localCatchArray[j] = doc.data();
+                console.log(localCatchArray[j]);
+                localStorage.setItem('localStorage', localCatchArray);
 
               } else {
-                  console.log(localCatchArray);
-                  tempCatchesCol.doc(doc.id).set(localCatchArray[j]);
-                  // TODO: Show catch added, then dissapear after 5 secs
+                console.log(localCatchArray);
+                tempCatchesCol.doc(doc.id).set(localCatchArray[j]);
+                // TODO: Show catch added, then disappear after 5 secs
               }
             }
             console.log('Saving to local device');
             localStorage.setItem('localCatches', JSON.stringify(localCatchArray));
           }
-
         }).catch(function(error) {
             console.log('Error getting document:', error);
         });

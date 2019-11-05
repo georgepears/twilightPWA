@@ -102,14 +102,14 @@ h1, h2, h3 {
 .help-btn img {
     position: absolute;
     height: 38px;
-    top: 19px;
+    top: 43px;
     right: 20px;
 }
 
 .back-btn img {
     position: absolute;
     height: 38px;
-    top: 19px;
+    top: 43px;
     left: 20px;
 }
 
@@ -219,7 +219,7 @@ h1, h2, h3 {
     padding-top: 100%; /* 1:1 Aspect Ratio */
     border-radius: 40px;
  }
- 
+
  .scanner-container {
     position:  absolute;
     top: 0;
