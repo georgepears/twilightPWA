@@ -11,6 +11,10 @@
         </div>
     </div>
 
+    <div *ngIf="menuVisible" class="menu">
+
+    </div>
+
     <div class="online-status">
             <div *ngIf="online$ | async; else offline" class="online">
                 <div class="dot-online"></div>
@@ -138,6 +142,10 @@
             <div (click)="showAddManually()" class="add-manually-btn">
                 <img src="assets/add.png"> <p>Add catch manually</p>
                 <div class="clear"></div>
+            </div>
+            <div *ngIf="torchWorking" (click)="torchOn()" class="add-manually-btn">
+               <p>Torch</p>
+              <div class="clear"></div>
             </div>
         </div>
 

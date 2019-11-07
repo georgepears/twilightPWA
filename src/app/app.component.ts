@@ -1,14 +1,13 @@
-import { Component } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/firestore';
-import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask } from '@angular/fire/storage';
+import {Component, ViewChild, ViewEncapsulation} from '@angular/core';
+import {AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument} from '@angular/fire/firestore';
+import {AngularFireAuth} from '@angular/fire/auth';
+import {AngularFireStorage, AngularFireStorageReference, AngularFireUploadTask} from '@angular/fire/storage';
 import {formatDate} from '@angular/common';
-import { Observable } from 'rxjs';
-import { ZXingScannerComponent } from '@zxing/ngx-scanner';
-import { ViewChild } from '@angular/core';
-import { map } from 'rxjs/operators';
-import { ConnectionService } from 'ng-connection-service';
-import { Network } from '@ngx-pwa/offline';
+import {Observable} from 'rxjs';
+import {ZXingScannerComponent} from '@zxing/ngx-scanner';
+import {map} from 'rxjs/operators';
+import {ConnectionService} from 'ng-connection-service';
+import {Network} from '@ngx-pwa/offline';
 
 interface Catch {
   catchID: string;
@@ -34,7 +33,8 @@ interface Chaser {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class AppComponent {
 
@@ -45,8 +45,6 @@ export class AppComponent {
   chasersListCol: AngularFirestoreCollection<Chaser>;
   chasersList: Observable<Chaser[]>;
   chaserID: string;
-  chaserName: string;
-  currentLocation: string;
 
   catchWatchCol: AngularFirestoreCollection<any>;
   catchWatch: any;
@@ -65,6 +63,7 @@ export class AppComponent {
   catchAddedVisible = false;
   takePhotoVisible = false;
   uploadingManualVisible = false;
+  menuVisible = false;
 
   manualRunnerID: String;
   public imagePath;
@@ -74,7 +73,6 @@ export class AppComponent {
   task: AngularFireUploadTask;
 
   availableDevices: MediaDeviceInfo[];
-  currentDevice: MediaDeviceInfo = null;
   hasDevices: boolean;
   hasPermission: boolean;
 
@@ -85,6 +83,8 @@ export class AppComponent {
   online$ = this.network.onlineChanges;
 
   catchesPending = false;
+
+  torchWorking = false;
 
 
   @ViewChild('scanner', {static: false})
@@ -113,7 +113,7 @@ export class AppComponent {
       );
 
     this.afs.collection('chasers').valueChanges().subscribe(data => {
-      console.log('UPDATING LOCAL FROM FIREBASE BECAUSE SNAPSHOT CHANGE!');
+      console.log('UPDATING LOCAL FROM FIREBASE BECAUSE SNAPSHOT CHANGE! - ' + data);
       this.updateFirestoreFromLocal();
     });
 
@@ -145,7 +145,7 @@ export class AppComponent {
   }
 
   updateOnlineStatus(){
-    console.log("CHECKING ONLINE STATUS")
+    console.log("CHECKING ONLINE STATUS");
     this.connectionService.monitor().subscribe(isConnected => {
       this.isConnected = isConnected;
       if (this.isConnected) {
@@ -215,19 +215,45 @@ export class AppComponent {
     this.hasPermission = has;
   }
 
+  torchOn(){
+    this.scanner.torch = true;
+  }
+
   onCodeResult(resultString: string) {
-    this.addCatch(resultString, 'scan');
+    this.getLocation(resultString, 'scan');
 
   }
 
-  addCatch(runnerID: string, catchMethod: string) {
+  getLocation(runnerID: string, catchMethod: string){
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position)=>{
+        const latLong = position.coords.latitude + ", " + position.coords.longitude;
+        console.log("Location found: "+position.coords.latitude)
+
+        return this.addCatch(runnerID, catchMethod, latLong);
+      });
+    } else {
+      console.log("No support for geolocation")
+      return this.addCatch(runnerID, catchMethod, "undefined");
+    }
+  }
+
+  addCatch(runnerID: string, catchMethod: string, currentLocation: string) {
 
     this.qrResultString = runnerID;
     let currentTime = formatDate(new Date(), 'HH:mm', 'en');
-    let currentLocation: string;
     let catchID = currentTime + '-' + this.chaserID + '-' + runnerID;
 
-    let newCatchData = {catchID: catchID, runnerID: runnerID, time: currentTime, chaserID: this.chaserID, status: 'pending', runnerName: 'Catch Pending...', method: catchMethod};
+    let newCatchData = {
+      catchID: catchID,
+      runnerID: runnerID,
+      time: currentTime,
+      chaserID: this.chaserID,
+      status: 'pending',
+      runnerName: 'Catch Pending...',
+      method: catchMethod,
+      currentLocation
+    };
 
     console.log(newCatchData);
 
@@ -252,6 +278,15 @@ export class AppComponent {
 
 
     }
+
+    if (catchMethod == "manual") {
+      console.log('Uploading image as ' + catchID);
+      this.ref = this.afStorage.ref(catchID);
+      this.task = this.ref.put(this.imagePath[0]);
+      this.uploadProgress = this.task.percentageChanges();
+
+    }
+
     // this.afs.collection('catches').doc(catchID).set(newCatchData);
     this.updateFirestoreFromLocal();
     this.showCatchAdded();
@@ -331,18 +366,10 @@ export class AppComponent {
     this.scannerVisible = true;
   }
 
-  resetCode() {
-    this.qrResultString = '';
-  }
-
   cancelCatch() {
     this.scannerVisible = false;
     this.catchesVisible = true;
     this.scanner.enable = false;
-  }
-
-  alertString(alerts: string) {
-    alert(alerts);
   }
 
   showAddManually() {
@@ -379,24 +406,12 @@ export class AppComponent {
 
   imageChosen(files) {
 
-    let reader = new FileReader();
     this.imagePath = files;
-    reader.readAsDataURL(files[0]);
-    reader.onload = (_event) => {
-      this.imgURL = reader.result;
-    };
-
     let runnerID = 'trt' + this.manualRunnerID;
+    this.getLocation(runnerID, "manual");
 
-    let catchID = this.addCatch(runnerID, 'manual');
+    this.takePhotoVisible = false;
 
-    if (catchID) {
-      console.log('Uploading image as ' + catchID);
-      this.ref = this.afStorage.ref(catchID);
-      this.task = this.ref.put(files[0]);
-      this.uploadProgress = this.task.percentageChanges();
-      this.takePhotoVisible = false;
-    }
 
     // this.uploadingManualVisible = true;
 
