@@ -55,7 +55,7 @@
             </div>
             <div class="enterPassword">
                 <p>Logging in as <b>{{loginTempUsername}}</b></p>
-                <input placeholder="Enter password..." (keyup.enter)="login(password.value)" type="password" #password>
+                <input placeholder="Enter your pin" (keyup.enter)="login(password.value)" type="number" #password>
                 <button (click)="login(password.value)">Go</button>
             </div>
         </div>
@@ -144,7 +144,7 @@
                 <div class="clear"></div>
             </div>
             <div *ngIf="torchWorking" (click)="torchOn()" class="add-manually-btn">
-               <p>Torch</p>
+               <p>Turn on torch</p>
               <div class="clear"></div>
             </div>
         </div>

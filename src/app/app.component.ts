@@ -84,7 +84,8 @@ export class AppComponent {
 
   catchesPending = false;
 
-  torchWorking = false;
+  torchWorking = true;
+  torchIsOn = false;
 
 
   @ViewChild('scanner', {static: false})
@@ -177,6 +178,7 @@ export class AppComponent {
       })
       .catch(error => {
           console.log(error);
+          alert(error);
         });
   }
 
@@ -216,7 +218,15 @@ export class AppComponent {
   }
 
   torchOn(){
-    this.scanner.torch = true;
+    if (this.torchIsOn) {
+      this.scanner.torch = false;
+      this.torchIsOn = false;
+      console.log('Torch off');
+    } else {
+      this.scanner.torch = true;
+      this.torchIsOn = true;
+      console.log('Torch on');
+    }
   }
 
   onCodeResult(resultString: string) {
