@@ -26,6 +26,7 @@
     "@zxing/ngx-scanner": "^2.0.1",
     "firebase": "^6.6.1",
     "ng-connection-service": "^1.0.4",
+    "ng-lz-string": "^1.5.3",
     "ngx-online-status": "^1.0.1",
     "rxjs": "~6.5.3",
     "tslib": "^1.10.0",

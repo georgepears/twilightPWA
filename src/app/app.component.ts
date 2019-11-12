@@ -8,6 +8,7 @@ import {ZXingScannerComponent} from '@zxing/ngx-scanner';
 import {map} from 'rxjs/operators';
 import {ConnectionService} from 'ng-connection-service';
 import {Network} from '@ngx-pwa/offline';
+import {LZStringService} from 'ng-lz-string';
 
 interface Catch {
   catchID: string;
@@ -64,6 +65,7 @@ export class AppComponent {
   takePhotoVisible = false;
   uploadingManualVisible = false;
   menuVisible = false;
+  pleaseWaitVisible = false;
 
   manualRunnerID: String;
   public imagePath: String;
@@ -91,7 +93,7 @@ export class AppComponent {
   scanner: ZXingScannerComponent;
 
 
-  constructor(protected network: Network, private afStorage: AngularFireStorage, private afs: AngularFirestore, public afAuth: AngularFireAuth, private connectionService: ConnectionService) {
+  constructor(protected network: Network, private afStorage: AngularFireStorage, private afs: AngularFirestore, public afAuth: AngularFireAuth, private connectionService: ConnectionService, private lz: LZStringService) {
 
     this.connectionService.monitor().subscribe(isConnected => {
       this.isConnected = isConnected;
@@ -229,7 +231,16 @@ export class AppComponent {
   }
 
   onCodeResult(resultString: string) {
-    this.getLocation(resultString, 'scan');
+    let firstPart = resultString.substr(0,4);
+    let lastPart = Number(resultString.substr(3, 3));
+    if (resultString.length == 6 && firstPart == "trt1" && lastPart > 100 && lastPart < 140) {
+      this.scannerVisible = false;
+      this.pleaseWaitVisible = true;
+      this.getLocation(resultString, 'scan');
+    } else {
+      alert('Sorry, this doesn\'t look like a runner\'s card!');
+    }
+
 
   }
 
@@ -272,7 +283,7 @@ export class AppComponent {
     if (tempLocalCatches != null) {
       if (localStorage.getItem('localCatches').includes(catchID)) {
         console.log('Catch is already here!');
-        alert("This team has already been caught at "+currentTime+"! It has not been added.")
+        alert("Looks like you've just caught this team, you might have scanned it twice! Your catch is already saved.")
       } else {
         console.log('Local catches already initialized, pushing catch');
         tempLocalCatches.push(newCatchData);
@@ -377,13 +388,16 @@ export class AppComponent {
     let tempLocalImages = JSON.parse(localStorage.getItem('localImages'));
     console.log("Just got the images:"+tempLocalImages);
 
-    if (tempLocalImages) {
+    if (tempLocalImages != "" && tempLocalImages != null) {
       for (let i = 0; i < tempLocalImages.length; i++) {
         console.log("Uploading image for catch:" + tempLocalImages[i].name);
         this.ref = this.afStorage.ref(tempLocalImages[i].name);
-        this.ref.putString(tempLocalImages[i].image, 'base64', {contentType: 'image/jpeg'}).then(function(snapshot) {
+        const decompressed = this.lz.decompress(tempLocalImages[i].image);
+        console.log("Decompressed image!")
+        this.ref.putString(decompressed, 'base64', {contentType: 'image/jpeg'}).then(function(snapshot) {
           console.log("Image has been uploaded successfully");
-          tempLocalImages.shift();
+          console.log(tempLocalImages.shift()+" was shifted.");
+          localStorage.setItem('localImages', JSON.stringify(tempLocalImages));
         });
       }
     }
@@ -391,7 +405,7 @@ export class AppComponent {
       console.log("image storage empty")
     }
 
-    localStorage.setItem('localImages', JSON.stringify(tempLocalImages));
+
 
 
     console.log('Saving to local device');
@@ -433,29 +447,41 @@ export class AppComponent {
   }
 
   showCatchAdded() {
-    this.scannerVisible = false;
+    this.pleaseWaitVisible = false;
     this.addManuallyVisible = false;
     this.catchAddedVisible = true;
   }
 
   showAddPhoto(runnerInput: string) {
-    this.addManuallyVisible = false;
-    this.takePhotoVisible = true;
+    let runnerNumber = Number(runnerInput);
+    console.log(runnerNumber);
+    if (Number.isInteger(Number(runnerInput)) && Number(runnerInput) > 100 && Number(runnerInput) < 140){
+      console.log("_/")
+      this.addManuallyVisible = false;
+      this.takePhotoVisible = true;
+      this.manualRunnerID = runnerInput;
+    }
+    else {
+      alert("Sorry, this doesn't look like a runner's ID!");
+      console.log("x")
+    }
 
-    this.manualRunnerID = runnerInput;
   }
 
   imageChosen(files) {
+
+    this.takePhotoVisible = false;
+    this.pleaseWaitVisible = true;
 
     let reader = new FileReader();
     reader.onload = this._handleReaderLoaded.bind(this);
     reader.readAsBinaryString(files[0]);
 
     console.log(this.imagePath);
-    let runnerID = 'trt' + this.manualRunnerID;
-    this.getLocation(runnerID, "manual");
 
-    this.takePhotoVisible = false;
+
+
+
 
 
     // this.uploadingManualVisible = true;
@@ -463,9 +489,15 @@ export class AppComponent {
 
   _handleReaderLoaded(readerEvt) {
     let binaryString = readerEvt.target.result;
-    this.imagePath= btoa(binaryString);
+    let btoaString = btoa(binaryString);
+    console.log("Compressing and setting image...")
+    this.imagePath = this.lz.compress(btoaString);
+    let runnerID = 'trt' + this.manualRunnerID;
+    this.getLocation(runnerID, "manual");
     console.log(btoa(binaryString));
   }
+
+
 
 
 }

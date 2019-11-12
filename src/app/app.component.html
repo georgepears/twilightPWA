@@ -79,7 +79,7 @@
                     <img src="assets/sunset.png">
                 </div>
                 <h3>Your catches:</h3>
-                <div *ngIf="online$| async; else offlineCatchList"></div>
+              <div *ngIf="online$ | async; else offlineCatchList"></div>
                 <ng-template #offlineCatchList >You're offline - go back online to get the latest view of your catches.</ng-template>
                 <div id="#catchList">
                     <div class="catch" *ngFor="let catch of catches | async">
@@ -205,6 +205,19 @@
                 <p>Progress: {{uploadProgress | async}}</p>
                 <button class="btn-red" (click)="backToCatches()">Okay!</button>
             </div>
+        </div>
+
+        <div *ngIf="pleaseWaitVisible">
+          <div class="header">
+            <div class="logo">
+              <img src="assets/logo.png">
+            </div>
+          </div>
+          <div class="centre-container">
+            <h1>Please wait...</h1>
+            <p>You may need to accept location permissions...</p>
+            <p>If this is a manual catch, it may take a while to process your photo - please be patient!</p>
+          </div>
         </div>
 
         <div *ngIf="catchAddedVisible">

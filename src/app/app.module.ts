@@ -10,6 +10,7 @@ import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 import { UploadFormComponent } from './uploads/upload-form/upload-form.component';
+import { LZStringModule, LZStringService } from 'ng-lz-string';
 
 
 @NgModule({
@@ -26,9 +27,12 @@ import { UploadFormComponent } from './uploads/upload-form/upload-form.component
     AngularFireAuthModule,
     AngularFireStorageModule,
     AngularFirestoreModule.enablePersistence(),
+    LZStringModule
 
   ],
-  providers: [],
+  providers: [
+    LZStringService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
