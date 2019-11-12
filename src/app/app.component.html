@@ -55,7 +55,8 @@
             </div>
             <div class="enterPassword">
                 <p>Logging in as <b>{{loginTempUsername}}</b></p>
-                <input placeholder="Enter your pin" (keyup.enter)="login(password.value)" type="number" #password>
+                <p>Enter your pin:</p>
+                <input (keyup.enter)="login(password.value)" type="number" #password>
                 <button (click)="login(password.value)">Go</button>
             </div>
         </div>

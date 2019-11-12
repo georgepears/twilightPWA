@@ -66,11 +66,10 @@ export class AppComponent {
   menuVisible = false;
 
   manualRunnerID: String;
-  public imagePath;
+  public imagePath: String;
   imgURL: any;
 
   ref: AngularFireStorageReference;
-  task: AngularFireUploadTask;
 
   availableDevices: MediaDeviceInfo[];
   hasDevices: boolean;
@@ -273,6 +272,7 @@ export class AppComponent {
     if (tempLocalCatches != null) {
       if (localStorage.getItem('localCatches').includes(catchID)) {
         console.log('Catch is already here!');
+        alert("This team has already been caught at "+currentTime+"! It has not been added.")
       } else {
         console.log('Local catches already initialized, pushing catch');
         tempLocalCatches.push(newCatchData);
@@ -290,12 +290,23 @@ export class AppComponent {
     }
 
     if (catchMethod == "manual") {
-      console.log('Uploading image as ' + catchID);
-      this.ref = this.afStorage.ref(catchID);
-      this.task = this.ref.put(this.imagePath[0]);
-      this.uploadProgress = this.task.percentageChanges();
+      let tempLocalImages = JSON.parse(localStorage.getItem('localImages'));
+      if (tempLocalImages != null){
+        console.log("Image: array is not null, adding...")
+        tempLocalImages.push({'name': catchID, 'image': this.imagePath});
+        localStorage.setItem('localImages', JSON.stringify(tempLocalImages));
+        console.log("Local storage is now: "+JSON.stringify(tempLocalImages))
+      }
+      else {
+        console.log("Image: array is empty, creating...")
+        let newImageArray = [{'name': catchID, 'image': this.imagePath}];
+        localStorage.setItem('localImages', JSON.stringify(newImageArray));
+        console.log("Local storage is now: "+JSON.stringify(newImageArray))
+      }
 
     }
+
+
 
     // this.afs.collection('catches').doc(catchID).set(newCatchData);
     this.updateFirestoreFromLocal();
@@ -361,8 +372,28 @@ export class AppComponent {
       .catch(function(error) {
           console.log('Error getting documents: ', error);
       });
-
     }
+
+    let tempLocalImages = JSON.parse(localStorage.getItem('localImages'));
+    console.log("Just got the images:"+tempLocalImages);
+
+    if (tempLocalImages) {
+      for (let i = 0; i < tempLocalImages.length; i++) {
+        console.log("Uploading image for catch:" + tempLocalImages[i].name);
+        this.ref = this.afStorage.ref(tempLocalImages[i].name);
+        this.ref.putString(tempLocalImages[i].image, 'base64', {contentType: 'image/jpeg'}).then(function(snapshot) {
+          console.log("Image has been uploaded successfully");
+          tempLocalImages.shift();
+        });
+      }
+    }
+    else {
+      console.log("image storage empty")
+    }
+
+    localStorage.setItem('localImages', JSON.stringify(tempLocalImages));
+
+
     console.log('Saving to local device');
     localStorage.setItem('localCatches', JSON.stringify(localCatchArray));
     this.localCatches = JSON.parse(localStorage.getItem('localCatches'));
@@ -416,7 +447,11 @@ export class AppComponent {
 
   imageChosen(files) {
 
-    this.imagePath = files;
+    let reader = new FileReader();
+    reader.onload = this._handleReaderLoaded.bind(this);
+    reader.readAsBinaryString(files[0]);
+
+    console.log(this.imagePath);
     let runnerID = 'trt' + this.manualRunnerID;
     this.getLocation(runnerID, "manual");
 
@@ -424,11 +459,13 @@ export class AppComponent {
 
 
     // this.uploadingManualVisible = true;
-
-
-
   }
 
+  _handleReaderLoaded(readerEvt) {
+    let binaryString = readerEvt.target.result;
+    this.imagePath= btoa(binaryString);
+    console.log(btoa(binaryString));
+  }
 
 
 }

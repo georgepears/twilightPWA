@@ -66,13 +66,14 @@ h1, h2, h3 {
     border-radius: 10px;
     background-color:white;
     text-align: center;
-    width: 100%;
-    padding: 10px;
-    border: none;
+    width: 55%;
     margin: 5px 0px;
     color: #444B54;
-    font-weight: 700;
     box-sizing: border-box;
+    font-size: 25px;
+    font-weight: 700;
+    border: 1px solid #F26F6A;
+    padding: 7px;
 }
 
 .enterPassword button {
@@ -84,18 +85,20 @@ h1, h2, h3 {
     color: white;
     font-weight: 700;
     border: none;
+
 }
 
 .chooseUser {
     border-radius: 10px;
-    background-color:white;
+    background-color: #F26F6A;
     text-align: center;
     width: 100%;
-    padding: 10px;
+    padding: 20px 10px;
     border: none;
-    margin: 5px 0px;
-    color: #444B54;
+    margin: 8px 0px;
+    color: white;
     font-weight: 700;
+    font-size: 18px;
 
 }
 
