@@ -116,6 +116,12 @@ h1, h2, h3 {
     left: 20px;
 }
 
+.close-btn img {
+  position: absolute;
+  height: 38px;
+  top: 43px;
+  left:20px
+}
 
 #catcherInfo {
     height: 100px;
