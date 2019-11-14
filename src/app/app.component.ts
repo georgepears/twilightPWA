@@ -75,6 +75,7 @@ export class AppComponent {
 
   availableDevices: MediaDeviceInfo[];
   hasDevices: boolean;
+  currentDevice: MediaDeviceInfo = null;
   hasPermission: boolean;
 
   uploadProgress: Observable<number>;
@@ -186,6 +187,7 @@ export class AppComponent {
   logout() {
     localStorage.removeItem('localChaserEmail');
     localStorage.removeItem('localCatches');
+    localStorage.removeItem('localImages');
     this.afAuth.auth.signOut();
     location.reload();
   }
@@ -211,6 +213,21 @@ export class AppComponent {
   onCamerasFound(devices: MediaDeviceInfo[]): void {
     this.availableDevices = devices;
     this.hasDevices = Boolean(devices && devices.length);
+  }
+
+  onDeviceChange(){
+    if (this.availableDevices.length > 1){
+      if (this.currentDevice == this.availableDevices[0]){
+        this.currentDevice = this.availableDevices[1]
+
+      }
+      else {
+        this.currentDevice = this.availableDevices[0]
+      }
+    }
+    else {
+      alert("There is only one camera on this device!");
+    }
   }
 
 
@@ -478,12 +495,6 @@ export class AppComponent {
     reader.readAsBinaryString(files[0]);
 
     console.log(this.imagePath);
-
-
-
-
-
-
     // this.uploadingManualVisible = true;
   }
 
@@ -497,7 +508,13 @@ export class AppComponent {
     console.log(btoa(binaryString));
   }
 
+  showMenu(){
+    this.menuVisible = true;
+  }
 
+  hideMenu(){
+    this.menuVisible = false;
+  }
 
 
 }

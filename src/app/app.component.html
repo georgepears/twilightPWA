@@ -11,9 +11,23 @@
         </div>
     </div>
 
-    <div class="menu">
+    <div *ngIf="menuVisible" class="menu" (click)="hideMenu()">
       <div class="menu-cover"></div>
-      <div class="close-btn"></div>
+      <div class="close-btn">
+        <img src="assets/close.png" (click)="hideMenu()">
+      </div>
+      <div class="menu-buttons">
+        <div class="menu-option">
+          <img src="assets/help.png">
+          <span>Help</span>
+          <div class="clear"></div>
+        </div>
+        <div class="menu-option" (click)="logout()">
+          <img src="assets/logout.png">
+          <span>Logout</span>
+          <div class="clear"></div>
+        </div>
+      </div>
     </div>
 
     <div class="online-status">
@@ -69,8 +83,8 @@
             <div class="logo">
               <img src="assets/logo.png">
             </div>
-            <div class="help-btn">
-              <img src="assets/help.png" (click)="logout()">
+            <div class="menu-btn" (click)="showMenu()">
+              <img src="assets/menu.png">
             </div>
           </div>
             <div id="catches-content">
@@ -90,6 +104,20 @@
                         <div class="catchInfo">
                             <h3>{{catch.runnerName}}</h3>
                         </div>
+                        <div class="catchStatus">
+                          <div *ngIf="catch.status == 'approved'">
+                            <img src="assets/approved.png">
+                            <p>Approved</p>
+                          </div>
+                          <div *ngIf="catch.status == 'pending'">
+                            <img src="assets/pending.png">
+                            <p>Pending</p>
+                          </div>
+                          <div *ngIf="catch.status == 'denied'">
+                            <img src="assets/denied.png">
+                            <p>Denied</p>
+                          </div>
+                        </div>
                         <div class="clear"></div>
                     </div>
                 </div>
@@ -104,9 +132,6 @@
             <div class="header">
                 <div class="logo">
                     <img src="assets/logo.png">
-                </div>
-                <div class="help-btn">
-                    <img src="assets/help.png">
                 </div>
                 <div class="back-btn">
                     <img (click)="cancelCatch()" src="assets/back.png">
@@ -146,7 +171,11 @@
                 <div class="clear"></div>
             </div>
             <div *ngIf="torchWorking" (click)="torchOn()" class="add-manually-btn">
-               <p>Turn on torch</p>
+              <img src="assets/torch.png"> <p>Toggle torch</p>
+              <div class="clear"></div>
+            </div>
+            <div *ngIf="torchWorking" (click)="onDeviceChange()" class="add-manually-btn">
+              <img src="assets/camera.png"> <p>Flip Camera</p>
               <div class="clear"></div>
             </div>
         </div>
@@ -156,8 +185,8 @@
                 <div class="logo">
                     <img src="assets/logo.png">
                 </div>
-                <div class="help-btn">
-                    <img src="assets/help.png">
+                <div class="menu-btn" (click)="showMenu()">
+                    <img src="assets/menu.png">
                 </div>
                 <div class="back-btn">
                     <img (click)="backToScanner()" src="assets/back.png">
@@ -177,8 +206,8 @@
                 <div class="logo">
                     <img src="assets/logo.png">
                 </div>
-                <div class="help-btn">
-                    <img src="assets/help.png">
+                <div class="menu-btn" (click)="showMenu()">
+                    <img src="assets/menu.png">
                 </div>
                 <div class="back-btn">
                     <img (click)="backToScanner()" src="assets/back.png">
@@ -226,8 +255,8 @@
                 <div class="logo">
                     <img src="assets/logo.png">
                 </div>
-                <div class="help-btn">
-                    <img src="assets/help.png">
+                <div class="menu-btn" (click)="showMenu()">
+                    <img src="assets/menu.png">
                 </div>
             </div>
             <div class="centre-container">
